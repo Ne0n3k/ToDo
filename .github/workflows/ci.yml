@@ -17,9 +17,6 @@ jobs:
         with:
           xcode-version: '16.0'
 
-      - name: Show Xcode
-        run: xcodebuild -version
-
       - name: Locate Xcode project
         run: |
           set -e
@@ -31,22 +28,17 @@ jobs:
             echo "No .xcodeproj found"; ls -la; [ -d ToDo ] && ls -la ToDo || true; exit 1
           fi
 
-      - name: Install linters (optional)
-        run: |
-          brew update
-          brew install swiftlint swiftformat || true
-
-      - name: Lint
-        run: swiftlint || true
-
-      - name: Build (Simulator)
+      - name: Build (generic iOS device, no codesign)
         run: |
           set -eo pipefail
           xcodebuild \
             -project "$XCODE_CONTAINER" \
             -scheme "ToDo" \
-            -sdk iphonesimulator \
-            -destination 'generic/platform=iOS Simulator' \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
             -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
             IPHONEOS_DEPLOYMENT_TARGET=17.0 \
             clean build
