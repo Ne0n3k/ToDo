@@ -20,11 +20,36 @@ jobs:
       - name: Show Xcode
         run: xcodebuild -version
 
+      - name: Locate Xcode project
+        id: locate
+        run: |
+          set -e
+          if [ -f "ToDo.xcodeproj/project.pbxproj" ]; then
+            echo "XCODE_FLAG=-project" >> $GITHUB_ENV
+            echo "XCODE_CONTAINER=ToDo.xcodeproj" >> $GITHUB_ENV
+          elif [ -f "ToDo/ToDo.xcodeproj/project.pbxproj" ]; then
+            echo "XCODE_FLAG=-project" >> $GITHUB_ENV
+            echo "XCODE_CONTAINER=ToDo/ToDo.xcodeproj" >> $GITHUB_ENV
+          else
+            echo "No .xcodeproj found at repo root or ./ToDo"
+            echo "Repo tree:"; ls -la; echo; [ -d ToDo ] && ls -la ToDo || true
+            exit 1
+          fi
+          echo "Using $XCODE_FLAG $XCODE_CONTAINER"
+
+      - name: Install linters
+        run: |
+          brew update
+          brew install swiftlint swiftformat || true
+
+      - name: Lint
+        run: swiftlint || true
+
       - name: Build (Simulator)
         run: |
           set -eo pipefail
           xcodebuild \
-            -project ToDo.xcodeproj \
+            $XCODE_FLAG "$XCODE_CONTAINER" \
             -scheme "ToDo" \
             -sdk iphonesimulator \
             -destination 'generic/platform=iOS Simulator' \
