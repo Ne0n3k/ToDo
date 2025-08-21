@@ -1,44 +1,83 @@
-name: iOS CI
+name: CI
 
 on:
-  pull_request:
   push:
-    branches: [ main ]
+    branches: [main, feature/**, hotfix/**]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   build:
-    runs-on: macos-15
+    runs-on: macos-14
+    env:
+      SCHEME: ToDo
+      XCODE_VERSION: "16.0"
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Set up Xcode 16.0
+      - name: Select Xcode ${{ env.XCODE_VERSION }}
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '16.0'
+          xcode-version: ${{ env.XCODE_VERSION }}
 
-      - name: Locate Xcode project
+      - name: Show Xcode
         run: |
-          set -e
-          if [ -f "ToDo.xcodeproj/project.pbxproj" ]; then
-            echo "XCODE_CONTAINER=ToDo.xcodeproj" >> $GITHUB_ENV
-          elif [ -f "ToDo/ToDo.xcodeproj/project.pbxproj" ]; then
-            echo "XCODE_CONTAINER=ToDo/ToDo.xcodeproj" >> $GITHUB_ENV
-          else
-            echo "No .xcodeproj found"; ls -la; [ -d ToDo ] && ls -la ToDo || true; exit 1
+          xcodebuild -version
+          xcodebuild -showsdks
+          xcrun simctl list runtimes
+
+      - name: Locate Xcode project/workspace
+        run: |
+          set -eo pipefail
+          CONTAINER=$(find . -name "*.xcworkspace" -o -name "*.xcodeproj" | grep -E "/ToDo\.xc(workspace|odeproj)$" || true)
+          if [ -z "$CONTAINER" ]; then
+            CONTAINER=$(find . -name "*.xcworkspace" -o -name "*.xcodeproj" | head -n1)
+          fi
+          echo "XCODE_CONTAINER=$CONTAINER" >> $GITHUB_ENV
+          echo "Using container: $CONTAINER"
+
+      - name: Guard Preview Assets
+        run: |
+          PBXPROJ="${XCODE_CONTAINER%/*}/project.pbxproj"
+          if grep -q "Preview Assets.xcassets" "$PBXPROJ"; then
+            echo "::error::Preview Assets.xcassets is part of the app target. Remove it from Target Membership / Copy Bundle Resources."
+            exit 1
           fi
 
-      - name: Build (generic iOS device, no codesign)
+      - name: Build (device, no signing)
         run: |
           set -eo pipefail
           xcodebuild \
             -project "$XCODE_CONTAINER" \
-            -scheme "ToDo" \
+            -scheme "${SCHEME}" \
             -sdk iphoneos \
             -destination 'generic/platform=iOS' \
             -configuration Debug \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
-            IPHONEOS_DEPLOYMENT_TARGET=17.0 \
             clean build
+
+      - name: Lint (optional)
+        if: always()
+        run: |
+          if command -v swiftlint >/dev/null; then swiftlint --strict || true; else echo "SwiftLint not found"; fi
+          if command -v swiftformat >/dev/null; then swiftformat --lint . || true; else echo "SwiftFormat not found"; fi
+
+      - name: Upload Xcode logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcode-logs
+          path: |
+            ~/Library/Developer/Xcode/DerivedData/**/Logs/Build/*.xcactivitylog
+          if-no-files-found: ignore
