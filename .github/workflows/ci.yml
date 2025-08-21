@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main, feature/**, hotfix/**, release]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-14
+    env:
+      SCHEME: ToDo
+      XCODE_VERSION: "16.2.0"
+      XCODE_CONTAINER: ToDo/ToDo.xcodeproj
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode ${{ env.XCODE_VERSION }}
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ env.XCODE_VERSION }}
+
+      - name: Show Xcode
+        run: |
+          xcodebuild -version
+          xcodebuild -showsdks
+
+      - name: Remove Preview Assets (CI-only)
+        run: |
+          rm -rf "ToDo/ToDo/Preview Content/Preview Assets.xcassets" || true
+
+      - name: Build (device, no signing)
+        run: |
+          set -eo pipefail
+          xcodebuild \
+            -project "$XCODE_CONTAINER" \
+            -scheme "${SCHEME}" \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            clean build
+
+      - name: Upload Xcode logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcode-logs
+          path: |
+            ~/Library/Developer/Xcode/DerivedData/**/Logs/Build/*.xcactivitylog
+          if-no-files-found: ignore
