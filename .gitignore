@@ -4,6 +4,7 @@ build/
 *.xcworkspace/xcuserdata/
 *.xcuserstate
 *.xcscmblueprint
+.DS_Store
 
 # SwiftPM
 .build/
