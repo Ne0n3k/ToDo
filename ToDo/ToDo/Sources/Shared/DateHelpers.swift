@@ -11,7 +11,7 @@ public func plannedDateText(_ date: Date?, now: Date = Date(),
                             calendar: Calendar = .current,
                             locale: Locale = Locale(identifier: "en_US_POSIX")) -> String {
     guard let date = date else { return "None" }
-    var cal = calendar
+    let cal = calendar
     if cal.isDate(date, inSameDayAs: now) { return "Today" }
 
     if let tomorrow = cal.date(byAdding: .day, value: 1, to: cal.startOfDay(for: now)),
