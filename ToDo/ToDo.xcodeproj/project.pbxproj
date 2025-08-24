@@ -35,7 +35,6 @@
 			membershipExceptions = (
 				"Preview Content/Preview Assets.xcassets",
 				Resources/Assets.xcassets,
-				ToDoTests/DateHelpersTests.swift,
 				ToDoTests/ToDoTests.swift,
 				ToDoUITests/ToDoUITests.swift,
 				ToDoUITests/ToDoUITestsLaunchTests.swift,
@@ -45,7 +44,6 @@
 		C23530C32E5751C700EB3D9C /* Exceptions for "ToDo" folder in "ToDoTests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				ToDoTests/DateHelpersTests.swift,
 				ToDoTests/ToDoTests.swift,
 			);
 			target = C23530992E57508500EB3D9C /* ToDoTests */;
