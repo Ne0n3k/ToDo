@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftData
 
 public enum Priority: String, CaseIterable, Codable {
     case high = "High"
@@ -13,8 +14,9 @@ public enum Priority: String, CaseIterable, Codable {
     case low = "Low"
 }
 
-public struct ToDo: Identifiable, Equatable, Codable {
-    public var id = UUID()
+@Model
+public class ToDo {
+    public var id: UUID
     public var title: String
     public var taskDescription: String?
     public var priority: Priority
@@ -23,6 +25,7 @@ public struct ToDo: Identifiable, Equatable, Codable {
     public var isCompleted: Bool
 
     public init(
+        id: UUID = UUID(),
         title: String,
         taskDescription: String? = nil,
         priority: Priority = .normal,
@@ -30,6 +33,7 @@ public struct ToDo: Identifiable, Equatable, Codable {
         deadline: Date? = nil,
         isCompleted: Bool = false
     ) {
+        self.id = id
         self.title = title
         self.taskDescription = taskDescription
         self.priority = priority
