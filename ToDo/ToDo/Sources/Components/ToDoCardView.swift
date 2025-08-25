@@ -2,90 +2,95 @@
 //  ToDoCardView.swift
 //  ToDo
 //
-//  Created by Jakub Błażowski on 22/08/2025.
+//  Created by Jakub Błażowski on 25/08/2025.
 //
 
 import SwiftUI
 
 struct ToDoCardView: View {
-    let task: ToDo
-    @Binding var isCompleted: Bool
+    @State var task: ToDo
 
-    private var priorityColor: Color {
+    var priorityColor: Color {
         switch task.priority {
-        case .high:   return .red
-        case .normal: return .yellow
-        case .low:    return .green
+        case .high:
+            return Color("highPriorityColor")
+        case .normal:
+            return Color("normalPriorityColor")
+        case .low:
+            return Color("lowPriorityColor")
         }
     }
 
-    private var plannedDateTextValue: String {
-        plannedDateText(task.plannedDate)
+    var plannedDateText: String {
+        guard let date = task.plannedDate else { return "None" }
+        let calendar = Calendar.current
+        if calendar.isDateInToday(date) {
+            return "Today"
+        } else if calendar.isDateInTomorrow(date) {
+            return "Tomorrow"
+        } else {
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "dd MMMM"
+            if calendar.component(.year, from: date) != calendar.component(.year, from: Date()) {
+                dateFormatter.dateFormat = "dd MMMM yyyy"
+            }
+            return dateFormatter.string(from: date)
+        }
     }
 
-    private var daysUntilDeadlineValue: String {
-        daysUntilDeadlineString(task.deadline)
+    var daysUntilDeadline: String {
+        guard let deadline = task.deadline else { return "No date" }
+        let daysLeft = Calendar.current.dateComponents([.day], from: Date(), to: deadline).day ?? 0
+        if daysLeft >= 0 {
+            return "\(daysLeft) days left"
+        } else {
+            return "\(abs(daysLeft)) days after the deadline"
+        }
     }
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            CheckBoxView(isChecked: $isCompleted)
-                .padding(.top, 2)
-
-            VStack(alignment: .leading, spacing: 6) {
-                Text(task.title)
-                    .font(.headline)
-                    .foregroundStyle(.primary)
-
-                if let desc = task.taskDescription, !desc.isEmpty {
-                    Text(desc)
+        VStack {
+            HStack {
+                CheckBoxView(isChecked: $task.isCompleted)
+                    .padding()
+                
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(task.title)
+                        .font(.headline).bold()
+                        .foregroundColor(Color("TextColorDark"))
+                    
+                    HStack {
+                        Circle()
+                            .fill(priorityColor)
+                            .frame(width: 10, height: 10)
+                        
+                        Text(plannedDateText)
+                            .font(.subheadline)
+                            .foregroundColor(Color("TextColorDark"))
+                    }
+                    
+                    Text(daysUntilDeadline)
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
+                        .foregroundColor(daysUntilDeadline.contains("after") ? .red : Color("TextColorDark"))
                 }
-
-                HStack(spacing: 8) {
-                    Circle()
-                        .fill(priorityColor)
-                        .frame(width: 8, height: 8)
-
-                    Text(plannedDateTextValue)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
-
-                Text(daysUntilDeadlineValue)
-                    .font(.footnote)
-                    .foregroundStyle(daysUntilDeadlineValue.contains("after") ? .red : .secondary)
+                Spacer()
             }
-
-            Spacer(minLength: 0)
+            .padding()
+            .background(Color("backgroundFrameColor"))
+            .cornerRadius(15)
+            .shadow(radius: 5)
+            .padding(.horizontal, 20)
+            .padding(.top, 20)
+            .padding(.bottom, 8)
+            
+            Spacer()
         }
-        .padding(14)
-        .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(.background.opacity(0.6))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(.quaternary, lineWidth: 1)
-                )
-        )
-        .shadow(radius: 2, y: 1)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 6)
     }
 }
 
-#Preview("ToDoCardView", traits: .sizeThatFitsLayout) {
-    ToDoCardView(
-        task: ToDo(
-            title: "Prototype ToDoCardView",
-            taskDescription: "Small card showing priority, planned date and deadline.",
-            priority: .high,
-            plannedDate: Date(),
-            deadline: Calendar.current.date(byAdding: .day, value: 2, to: Date())
-        ),
-        isCompleted: .constant(false)
-    )
-    .padding()
+struct ToDoCardView_Previews: PreviewProvider {
+    static var previews: some View {
+        ToDoCardView(task: ToDo(title: "Task 1", taskDescription: "Description", priority: .high, plannedDate: Date(), deadline: Date().addingTimeInterval(86400)))
+            .previewLayout(.sizeThatFits)
+    }
 }

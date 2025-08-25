@@ -14,12 +14,11 @@ struct CheckBoxView: View {
         Image(systemName: isChecked ? "checkmark.square.fill" : "square")
             .resizable()
             .frame(width: 24, height: 24)
-            .foregroundStyle(isChecked ? .green : .gray)
+            .foregroundColor(isChecked ? .green : .gray)
             .onTapGesture {
                 withAnimation(.easeInOut) {
                     isChecked.toggle()
                 }
             }
-            .accessibilityLabel(isChecked ? "Completed" : "Not completed")
     }
 }
