@@ -21,6 +21,43 @@ final class ToDoUITests: XCTestCase {
     override func tearDownWithError() throws {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
+    
+    func testSaveButtonDisabledWithoutTitle_andEnabledAfterTyping() {
+        let app = XCUIApplication()
+        app.launch()
+
+        app.buttons["addTaskButton"].tap()
+
+        let saveButton = app.buttons["Save"]
+        XCTAssertFalse(saveButton.isEnabled)
+
+        let titleField = app.textFields["Add title"]
+        XCTAssertTrue(titleField.waitForExistence(timeout: 2))
+        titleField.tap()
+        titleField.typeText("UI Smoke Task")
+
+        XCTAssertTrue(saveButton.isEnabled)
+        app.buttons["Back"].tap()
+    }
+
+    func testAddTaskAndSeeItOnAllTasks() {
+        let app = XCUIApplication()
+        app.launch()
+
+        app.buttons["addTaskButton"].tap()
+
+        let title = "UITask \(Int(Date().timeIntervalSince1970))"
+        let titleField = app.textFields["Add title"]
+        XCTAssertTrue(titleField.waitForExistence(timeout: 2))
+        titleField.tap()
+        titleField.typeText(title)
+
+        app.buttons["Save"].tap()
+        app.tabBars.buttons["All tasks"].tap()
+
+        let cellTitle = app.staticTexts[title]
+        XCTAssertTrue(cellTitle.waitForExistence(timeout: 3))
+    }
 
     @MainActor
     func testExample() throws {
