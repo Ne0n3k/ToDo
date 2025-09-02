@@ -84,11 +84,11 @@ struct ContentView: View {
                                 .background(
                                     Circle()
                                         .fill(Color.red.opacity(0.8))
-                                        .frame(width: 28, height: 28)
+                                        .frame(width: 24, height: 24)
                                 )
                         }
                         .accessibilityIdentifier("addTaskButton")
-                        .padding(.trailing, 27)
+                        .padding(.trailing, 26)
                         .padding(.bottom, 72)
                     }
                 }
