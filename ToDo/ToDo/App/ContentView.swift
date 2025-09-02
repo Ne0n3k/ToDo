@@ -87,6 +87,7 @@ struct ContentView: View {
                                         .frame(width: 28, height: 28)
                                 )
                         }
+                        .accessibilityIdentifier("addTaskButton")
                         .padding(.trailing, 27)
                         .padding(.bottom, 72)
                     }

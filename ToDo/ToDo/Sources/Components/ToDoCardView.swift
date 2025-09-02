@@ -40,7 +40,10 @@ struct ToDoCardView: View {
 
     var daysUntilDeadline: String {
         guard let deadline = task.deadline else { return "No date" }
-        let daysLeft = Calendar.current.dateComponents([.day], from: Date(), to: deadline).day ?? 0
+        let cal = Calendar.current
+        let startOfToday = cal.startOfDay(for: Date())
+        let startOfDeadline = cal.startOfDay(for: deadline)
+        let daysLeft = cal.dateComponents([.day], from: startOfToday, to: startOfDeadline).day ?? 0
         if daysLeft >= 0 {
             return "\(daysLeft) days left"
         } else {
