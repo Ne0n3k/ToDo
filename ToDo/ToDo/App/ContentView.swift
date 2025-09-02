@@ -91,7 +91,8 @@ struct ContentView: View {
                         .padding(.trailing, 26)
                         .padding(.bottom, 72)
                     }
-                }            }
+                }
+            }
             .fullScreenCover(isPresented: $isPresentingAddForm) {
                 AddTaskFormView()
             }
