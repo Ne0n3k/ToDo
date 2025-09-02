@@ -1,9 +1,12 @@
 # ToDo (SwiftUI + SwiftData)
 
 App created for task management:
-- Priorities and deadlines
+- Add tasks with a title, optional description, priority, planned date, and deadline.
+- Mark tasks as done with a checkbox
+- Add new tasks
 - Screens: Summary / All / Planned / Overdue / Completed
 - Persistence: SwiftData (iOS 17+)
+- Device used: iPhone 16 pro
 
 ## Requirements
 - Xcode 15+
