@@ -14,8 +14,6 @@ App created for task management:
 2. Run on the iPhone simulator.
 
 ## Project Standards
-- **GitHub Flow** (feature branches → PR → `main`)
-- **Conventional Commits** (`feat`, `fix`, `chore`, `docs`, `refactor`, `test`)
-- **SemVer** (`vX.Y.Z` tags)
+- **GitHub Flow** (feature branches → PR → `release` → `main`)
 - **CI**: GitHub Actions
 - **Quality**: SwiftLint & SwiftFormat
